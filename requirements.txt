@@ -5,3 +5,4 @@ google-generativeai
 groq
 gunicorn
 reportlab
+psycopg2-binary
