@@ -75,7 +75,10 @@ class User(UserMixin):
 @login_manager.user_loader
 def load_user(user_id):
     """Recharge l'utilisateur à partir de son identifiant de session."""
-    row = database.get_utilisateur_par_id(int(user_id))
+    try:
+        row = database.get_utilisateur_par_id(int(user_id))
+    except (ValueError, TypeError):
+        return None
     if row is None:
         return None
     return User(row["id"], row["username"], row["is_admin"])
