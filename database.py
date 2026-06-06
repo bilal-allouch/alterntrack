@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 import psycopg2
+import pytz
 from psycopg2.extras import RealDictCursor
 
 
@@ -55,7 +56,7 @@ def init_db():
 
 def ajouter_candidature(data):
     """Insère une candidature à partir d'un dictionnaire et retourne son id."""
-    maintenant = datetime.now().isoformat(timespec="seconds")
+    maintenant = datetime.now(pytz.timezone("Europe/Paris")).replace(tzinfo=None).isoformat(timespec="seconds")
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -132,7 +133,7 @@ def get_candidature(id):
 
 def modifier_statut(id, statut):
     """Met à jour le statut d'une candidature et sa date de mise à jour."""
-    maintenant = datetime.now().isoformat(timespec="seconds")
+    maintenant = datetime.now(pytz.timezone("Europe/Paris")).replace(tzinfo=None).isoformat(timespec="seconds")
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -146,7 +147,7 @@ def modifier_statut(id, statut):
 
 def modifier_notes(id, notes):
     """Met à jour les notes d'une candidature et sa date de mise à jour."""
-    maintenant = datetime.now().isoformat(timespec="seconds")
+    maintenant = datetime.now(pytz.timezone("Europe/Paris")).replace(tzinfo=None).isoformat(timespec="seconds")
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -160,7 +161,7 @@ def modifier_notes(id, notes):
 
 def modifier_entretien(id, date_entretien):
     """Met à jour la date d'entretien d'une candidature et sa date de mise à jour."""
-    maintenant = datetime.now().isoformat(timespec="seconds")
+    maintenant = datetime.now(pytz.timezone("Europe/Paris")).replace(tzinfo=None).isoformat(timespec="seconds")
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -174,7 +175,7 @@ def modifier_entretien(id, date_entretien):
 
 def modifier_candidature(id, statut, notes, date_entretien):
     """Met à jour statut, notes et date d'entretien en une seule requête."""
-    maintenant = datetime.now().isoformat(timespec="seconds")
+    maintenant = datetime.now(pytz.timezone("Europe/Paris")).replace(tzinfo=None).isoformat(timespec="seconds")
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(

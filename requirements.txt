@@ -6,3 +6,4 @@ groq
 gunicorn
 reportlab
 psycopg2-binary
+pytz
