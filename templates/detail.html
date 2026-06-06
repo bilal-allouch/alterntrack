@@ -220,6 +220,21 @@
             color: var(--blanc);
         }
 
+        .btn-save {
+            background-color: var(--jaune);
+            color: var(--texte);
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7rem;
+            padding: 0.7rem 1.5rem;
+            transition: filter 0.15s ease;
+        }
+
+        .btn-save:hover {
+            filter: brightness(0.95);
+            color: var(--texte);
+        }
+
         .danger-zone {
             display: flex;
             align-items: center;
@@ -327,6 +342,10 @@
                     <div class="info-value">{{ candidature.localisation }}</div>
                 </div>
                 <div class="info-item">
+                    <div class="info-label">Source de l'offre</div>
+                    <div class="info-value">{{ candidature.source if candidature.source else "—" }}</div>
+                </div>
+                <div class="info-item">
                     <div class="info-label">Date de candidature</div>
                     <div class="info-value">{{ date_fr(candidature.date_candidature) }}</div>
                 </div>
@@ -359,66 +378,45 @@
 
         <div class="card-section">
             <div class="section-heading">
-                <i class="bi bi-flag-fill me-1" style="color: var(--jaune);"></i>Modifier le statut
+                <i class="bi bi-pencil-square me-1" style="color: var(--jaune);"></i>Modifier la candidature
             </div>
-            <form method="POST" action="{{ url_for('changer_statut', id=candidature.id) }}">
-                <div class="row g-2 align-items-end">
-                    <div class="col-sm">
-                        <label for="statut" class="form-label">Statut</label>
-                        <select id="statut" name="statut" class="form-select">
-                            {% for statut in statuts %}
-                                <option
-                                    value="{{ statut }}"
-                                    {% if statut == candidature.statut %}selected{% endif %}>
-                                    {{ statut }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-sm-auto">
-                        <button type="submit" class="btn-enregistrer">
-                            <i class="bi bi-check-lg me-1"></i>Enregistrer
-                        </button>
-                    </div>
+            <form id="form-modifier" method="POST" action="{{ url_for('modifier', id=candidature.id) }}">
+                <div class="mb-3">
+                    <label for="statut" class="form-label">Statut</label>
+                    <select id="statut" name="statut" class="form-select">
+                        {% for statut in statuts %}
+                            <option
+                                value="{{ statut }}"
+                                {% if statut == candidature.statut %}selected{% endif %}>
+                                {{ statut }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
-            </form>
-        </div>
 
-        <div id="card-entretien" class="card-section" style="display: none;">
-            <div class="section-heading">
-                <i class="bi bi-calendar-event-fill me-1" style="color: var(--jaune);"></i>Planifier un entretien
-            </div>
-            <form id="form-entretien" method="POST" action="{{ url_for('changer_entretien', id=candidature.id) }}">
-                <label class="form-label">Date et heure de l'entretien</label>
-                <div class="row g-2">
-                    <div class="col-sm">
-                        <input
-                            type="text"
-                            id="entretien_date"
-                            class="form-control"
-                            placeholder="JJ/MM/AAAA"
-                            value="{{ date_fr(candidature.date_entretien) if candidature.date_entretien else '' }}">
-                    </div>
-                    <div class="col-sm">
-                        <input
-                            type="time"
-                            id="entretien_heure"
-                            class="form-control"
-                            value="{{ candidature.date_entretien[11:16] if candidature.date_entretien else '' }}">
+                <div class="mb-3" id="bloc-entretien" style="display: none;">
+                    <label class="form-label">Date et heure de l'entretien</label>
+                    <div class="row g-2">
+                        <div class="col-sm">
+                            <input
+                                type="text"
+                                id="entretien_date"
+                                class="form-control"
+                                placeholder="JJ/MM/AAAA"
+                                value="{{ date_fr(candidature.date_entretien) if candidature.date_entretien else '' }}">
+                        </div>
+                        <div class="col-sm">
+                            <input
+                                type="time"
+                                id="entretien_heure"
+                                class="form-control"
+                                value="{{ candidature.date_entretien[11:16] if candidature.date_entretien else '' }}">
+                        </div>
                     </div>
                 </div>
+
                 <input type="hidden" id="date_entretien" name="date_entretien">
-                <button type="submit" class="btn-enregistrer mt-3">
-                    <i class="bi bi-check-lg me-1"></i>Enregistrer
-                </button>
-            </form>
-        </div>
 
-        <div class="card-section">
-            <div class="section-heading">
-                <i class="bi bi-pencil-fill me-1" style="color: var(--jaune);"></i>Modifier les notes
-            </div>
-            <form method="POST" action="{{ url_for('changer_notes', id=candidature.id) }}">
                 <div class="mb-3">
                     <label for="notes" class="form-label">Notes</label>
                     <textarea
@@ -427,7 +425,8 @@
                         class="form-control"
                         placeholder="Ajoutez vos remarques...">{{ candidature.notes if candidature.notes else "" }}</textarea>
                 </div>
-                <button type="submit" class="btn-enregistrer">
+
+                <button type="submit" class="btn-save">
                     <i class="bi bi-check-lg me-1"></i>Enregistrer
                 </button>
             </form>
@@ -452,14 +451,14 @@
 
     <script>
         const selectStatut = document.getElementById("statut");
-        const cardEntretien = document.getElementById("card-entretien");
-        const formEntretien = document.getElementById("form-entretien");
+        const blocEntretien = document.getElementById("bloc-entretien");
+        const formModifier = document.getElementById("form-modifier");
         const champDate = document.getElementById("entretien_date");
         const champHeure = document.getElementById("entretien_heure");
         const champHidden = document.getElementById("date_entretien");
 
         function majAffichageEntretien() {
-            cardEntretien.style.display =
+            blocEntretien.style.display =
                 selectStatut.value === "Entretien planifié" ? "block" : "none";
         }
 
@@ -494,7 +493,7 @@
             champDate.value = normaliserDateFr(champDate.value);
         });
 
-        formEntretien.addEventListener("submit", function () {
+        formModifier.addEventListener("submit", function () {
             const iso = frVersIso(normaliserDateFr(champDate.value));
             if (iso) {
                 const heure = champHeure.value || "00:00";

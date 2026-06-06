@@ -276,7 +276,7 @@
                 <i class="bi bi-check-circle-fill me-1"></i>Vérifiez et enregistrez
             </div>
 
-            <form method="POST" action="{{ url_for('confirmer') }}">
+            <form id="form-confirmer" method="POST" action="{{ url_for('confirmer') }}">
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="entreprise" class="form-label">Entreprise</label>
@@ -311,6 +311,24 @@
                                 <option value="{{ statut }}">{{ statut }}</option>
                             {% endfor %}
                         </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="source" class="form-label">Source de l'offre</label>
+                        <select id="source" name="source" class="form-select">
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="HelloWork">HelloWork</option>
+                            <option value="Welcome to the Jungle">Welcome to the Jungle</option>
+                            <option value="Indeed">Indeed</option>
+                            <option value="Google">Google</option>
+                            <option value="APEC">APEC</option>
+                            <option value="Pôle Emploi">Pôle Emploi</option>
+                            <option value="Site de l'entreprise">Site de l'entreprise</option>
+                            <option value="Autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="source-autre-wrap" style="display: none;">
+                        <label for="source_autre" class="form-label">Préciser la source</label>
+                        <input type="text" id="source_autre" name="source_autre" class="form-control" placeholder="Ex : Salon, cooptation...">
                     </div>
                     <div class="col-12">
                         <label for="lien_offre" class="form-label">Lien de l'offre (optionnel)</label>
@@ -424,6 +442,8 @@
 
                 setSelectValue(document.getElementById("type_contrat"), data.type_contrat);
                 setSelectValue(document.getElementById("statut"), data.statut || "En attente");
+                setSelectValue(document.getElementById("source"), data.source || "Autre");
+                majAffichageSourceAutre();
 
                 confirmSection.classList.add("show");
                 confirmSection.scrollIntoView({ behavior: "smooth" });
@@ -441,6 +461,26 @@
         const champDate = document.getElementById("date_candidature");
         champDate.addEventListener("blur", function () {
             champDate.value = normaliserDateFr(champDate.value);
+        });
+
+        const selectSource = document.getElementById("source");
+        const sourceAutreWrap = document.getElementById("source-autre-wrap");
+        const champSourceAutre = document.getElementById("source_autre");
+        const formConfirmer = document.getElementById("form-confirmer");
+
+        function majAffichageSourceAutre() {
+            sourceAutreWrap.style.display = selectSource.value === "Autre" ? "block" : "none";
+        }
+
+        selectSource.addEventListener("change", majAffichageSourceAutre);
+
+        formConfirmer.addEventListener("submit", function () {
+            if (selectSource.value === "Autre") {
+                const precision = champSourceAutre.value.trim();
+                if (precision) {
+                    setSelectValue(selectSource, precision);
+                }
+            }
         });
     </script>
 </body>

@@ -115,11 +115,39 @@
         .stat-retenu .stat-value { color: var(--vert); }
         .stat-refuse .stat-value { color: var(--rouge); }
 
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
         .filters {
             display: flex;
             flex-wrap: wrap;
             gap: 0.6rem;
-            margin-bottom: 1.5rem;
+        }
+
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #CBD5E1;
+            background-color: var(--blanc);
+            color: var(--texte);
+            border-radius: 0.6rem;
+            padding: 0.5rem 0.95rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.15s ease;
+        }
+
+        .btn-export:hover {
+            background-color: var(--fond);
+            color: var(--texte);
         }
 
         .pill {
@@ -372,19 +400,24 @@
             </div>
         </div>
 
-        <div class="filters">
-            <a
-                href="{{ url_for('index') }}"
-                class="pill {% if not statut_actif %}active{% endif %}">
-                Tous
-            </a>
-            {% for statut in statuts %}
+        <div class="toolbar">
+            <div class="filters">
                 <a
-                    href="{{ url_for('index', statut=statut) }}"
-                    class="pill {% if statut_actif == statut %}active{% endif %}">
-                    {{ statut }}
+                    href="{{ url_for('index') }}"
+                    class="pill {% if not statut_actif %}active{% endif %}">
+                    Tous
                 </a>
-            {% endfor %}
+                {% for statut in statuts %}
+                    <a
+                        href="{{ url_for('index', statut=statut) }}"
+                        class="pill {% if statut_actif == statut %}active{% endif %}">
+                        {{ statut }}
+                    </a>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('export_tuteur') }}" class="btn-export">
+                <i class="bi bi-file-pdf me-1"></i>Exporter pour tuteur
+            </a>
         </div>
 
         {% if candidatures %}

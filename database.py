@@ -29,6 +29,7 @@ def init_db():
             statut TEXT NOT NULL DEFAULT 'En attente',
             notes TEXT,
             date_entretien TEXT,
+            source TEXT,
             date_mise_a_jour TEXT NOT NULL
         )
         """
@@ -39,6 +40,8 @@ def init_db():
     ]
     if "date_entretien" not in colonnes:
         conn.execute("ALTER TABLE candidatures ADD COLUMN date_entretien TEXT")
+    if "source" not in colonnes:
+        conn.execute("ALTER TABLE candidatures ADD COLUMN source TEXT")
 
     conn.commit()
     conn.close()
@@ -53,8 +56,8 @@ def ajouter_candidature(data):
         INSERT INTO candidatures (
             entreprise, poste, type_contrat, localisation,
             date_candidature, lien_offre, statut, notes, date_entretien,
-            date_mise_a_jour
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            source, date_mise_a_jour
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             data.get("entreprise"),
@@ -66,6 +69,7 @@ def ajouter_candidature(data):
             data.get("statut", "En attente"),
             data.get("notes"),
             data.get("date_entretien"),
+            data.get("source"),
             maintenant,
         ),
     )
@@ -83,6 +87,21 @@ def get_toutes_candidatures():
     ).fetchall()
     conn.close()
     return lignes
+
+
+def get_toutes_candidatures_export():
+    """Retourne toutes les candidatures en dictionnaires simples pour l'export."""
+    conn = get_connection()
+    lignes = conn.execute(
+        """
+        SELECT entreprise, poste, type_contrat, localisation,
+               date_candidature, statut
+        FROM candidatures
+        ORDER BY date_candidature DESC, id DESC
+        """
+    ).fetchall()
+    conn.close()
+    return [dict(ligne) for ligne in lignes]
 
 
 def get_candidature(id):
@@ -126,6 +145,22 @@ def modifier_entretien(id, date_entretien):
     conn.execute(
         "UPDATE candidatures SET date_entretien = ?, date_mise_a_jour = ? WHERE id = ?",
         (date_entretien, maintenant, id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def modifier_candidature(id, statut, notes, date_entretien):
+    """Met à jour statut, notes et date d'entretien en une seule requête."""
+    maintenant = datetime.now().isoformat(timespec="seconds")
+    conn = get_connection()
+    conn.execute(
+        """
+        UPDATE candidatures
+        SET statut = ?, notes = ?, date_entretien = ?, date_mise_a_jour = ?
+        WHERE id = ?
+        """,
+        (statut, notes, date_entretien, maintenant, id),
     )
     conn.commit()
     conn.close()
