@@ -1,4 +1,4 @@
-"""Accès PostgreSQL (Supabase) pour AlternTrack : gestion des candidatures.
+"""Accès PostgreSQL (Supabase) pour AlternTrack : candidatures et utilisateurs.
 
 Utilise un pool de connexions thread-safe (compatible Gunicorn).
 """
@@ -9,6 +9,7 @@ from datetime import datetime
 import pytz
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
+from werkzeug.security import check_password_hash, generate_password_hash
 
 _pool = None
 
@@ -78,10 +79,21 @@ def _maintenant():
 
 
 def init_db():
-    """Crée la table et les colonnes manquantes si nécessaire."""
+    """Crée les tables et les colonnes manquantes si nécessaire."""
     conn = get_connection()
     try:
         cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                is_admin BOOLEAN DEFAULT FALSE,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS candidatures (
@@ -96,6 +108,7 @@ def init_db():
                 notes TEXT,
                 date_entretien TEXT,
                 source TEXT,
+                user_id INTEGER,
                 date_mise_a_jour TEXT NOT NULL
             )
             """
@@ -113,6 +126,8 @@ def init_db():
             cur.execute("ALTER TABLE candidatures ADD COLUMN date_entretien TEXT")
         if "source" not in colonnes:
             cur.execute("ALTER TABLE candidatures ADD COLUMN source TEXT")
+        if "user_id" not in colonnes:
+            cur.execute("ALTER TABLE candidatures ADD COLUMN user_id INTEGER")
 
         conn.commit()
         cur.close()
@@ -126,16 +141,69 @@ def init_db():
         release_connection(conn)
 
 
-def ajouter_candidature(data):
-    """Insère une candidature à partir d'un dictionnaire et retourne son id."""
+# --- Utilisateurs ------------------------------------------------------------
+
+
+def creer_utilisateur(username, password, is_admin=False):
+    """Crée un utilisateur. Retourne son id, ou None si le username est pris."""
+    if get_utilisateur_par_username(username) is not None:
+        return None
+    ligne = _run(
+        """
+        INSERT INTO users (username, password_hash, is_admin, created_at)
+        VALUES (%s, %s, %s, %s)
+        RETURNING id
+        """,
+        (username, generate_password_hash(password), is_admin, _maintenant()),
+        fetch="one",
+        commit=True,
+    )
+    return ligne["id"]
+
+
+def get_utilisateur_par_username(username):
+    """Retourne l'utilisateur correspondant au username, ou None."""
+    return _run(
+        "SELECT * FROM users WHERE username = %s", (username,), fetch="one"
+    )
+
+
+def get_utilisateur_par_id(id):
+    """Retourne l'utilisateur correspondant à l'id, ou None."""
+    return _run("SELECT * FROM users WHERE id = %s", (id,), fetch="one")
+
+
+def get_tous_utilisateurs():
+    """Retourne tous les utilisateurs, du plus ancien au plus récent."""
+    return _run("SELECT * FROM users ORDER BY id ASC", fetch="all")
+
+
+def supprimer_utilisateur(id):
+    """Supprime un utilisateur par son id."""
+    _run("DELETE FROM users WHERE id = %s", (id,), commit=True)
+
+
+def verifier_password(username, password):
+    """Retourne True si le couple username/password est valide."""
+    user = get_utilisateur_par_username(username)
+    if user is None:
+        return False
+    return check_password_hash(user["password_hash"], password)
+
+
+# --- Candidatures ------------------------------------------------------------
+
+
+def ajouter_candidature(data, user_id):
+    """Insère une candidature pour un utilisateur et retourne son id."""
     maintenant = _maintenant()
     ligne = _run(
         """
         INSERT INTO candidatures (
             entreprise, poste, type_contrat, localisation,
             date_candidature, lien_offre, statut, notes, date_entretien,
-            source, date_mise_a_jour
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            source, user_id, date_mise_a_jour
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
         """,
         (
@@ -149,6 +217,7 @@ def ajouter_candidature(data):
             data.get("notes"),
             data.get("date_entretien"),
             data.get("source"),
+            user_id,
             maintenant,
         ),
         fetch="one",
@@ -157,78 +226,64 @@ def ajouter_candidature(data):
     return ligne["id"]
 
 
-def get_toutes_candidatures():
-    """Retourne toutes les candidatures, de la plus récente à la plus ancienne."""
+def get_toutes_candidatures(user_id):
+    """Retourne les candidatures d'un utilisateur, de la plus récente à l'ancienne."""
     return _run(
-        "SELECT * FROM candidatures ORDER BY date_candidature DESC, id DESC",
+        """
+        SELECT * FROM candidatures
+        WHERE user_id = %s
+        ORDER BY date_candidature DESC, id DESC
+        """,
+        (user_id,),
         fetch="all",
     )
 
 
-def get_toutes_candidatures_export():
-    """Retourne toutes les candidatures en dictionnaires simples pour l'export."""
+def get_toutes_candidatures_export(user_id):
+    """Retourne les candidatures d'un utilisateur en dictionnaires pour l'export."""
     lignes = _run(
         """
         SELECT entreprise, poste, type_contrat, localisation,
                date_candidature, statut
         FROM candidatures
+        WHERE user_id = %s
         ORDER BY date_candidature DESC, id DESC
         """,
+        (user_id,),
         fetch="all",
     )
     return [dict(ligne) for ligne in lignes]
 
 
-def get_candidature(id):
-    """Retourne une candidature par son id, ou None si elle n'existe pas."""
+def get_candidature(id, user_id):
+    """Retourne une candidature si elle appartient à l'utilisateur, sinon None."""
     return _run(
-        "SELECT * FROM candidatures WHERE id = %s", (id,), fetch="one"
+        "SELECT * FROM candidatures WHERE id = %s AND user_id = %s",
+        (id, user_id),
+        fetch="one",
     )
 
 
-def modifier_statut(id, statut):
-    """Met à jour le statut d'une candidature et sa date de mise à jour."""
-    _run(
-        "UPDATE candidatures SET statut = %s, date_mise_a_jour = %s WHERE id = %s",
-        (statut, _maintenant(), id),
-        commit=True,
-    )
-
-
-def modifier_notes(id, notes):
-    """Met à jour les notes d'une candidature et sa date de mise à jour."""
-    _run(
-        "UPDATE candidatures SET notes = %s, date_mise_a_jour = %s WHERE id = %s",
-        (notes, _maintenant(), id),
-        commit=True,
-    )
-
-
-def modifier_entretien(id, date_entretien):
-    """Met à jour la date d'entretien d'une candidature et sa date de mise à jour."""
-    _run(
-        "UPDATE candidatures SET date_entretien = %s, date_mise_a_jour = %s WHERE id = %s",
-        (date_entretien, _maintenant(), id),
-        commit=True,
-    )
-
-
-def modifier_candidature(id, statut, notes, date_entretien):
-    """Met à jour statut, notes et date d'entretien en une seule requête."""
+def modifier_candidature(id, statut, notes, date_entretien, user_id):
+    """Met à jour statut, notes et entretien d'une candidature de l'utilisateur."""
     _run(
         """
         UPDATE candidatures
         SET statut = %s, notes = %s, date_entretien = %s, date_mise_a_jour = %s
-        WHERE id = %s
+        WHERE id = %s AND user_id = %s
         """,
-        (statut, notes, date_entretien, _maintenant(), id),
+        (statut, notes, date_entretien, _maintenant(), id, user_id),
         commit=True,
     )
 
 
-def supprimer_candidature(id):
-    """Supprime une candidature par son id."""
-    _run("DELETE FROM candidatures WHERE id = %s", (id,), commit=True)
+def supprimer_candidature(id, user_id):
+    """Supprime une candidature si elle appartient à l'utilisateur."""
+    _run(
+        "DELETE FROM candidatures WHERE id = %s AND user_id = %s",
+        (id, user_id),
+        commit=True,
+    )
 
 
 if __name__ == "__main__":

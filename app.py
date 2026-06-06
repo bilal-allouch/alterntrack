@@ -10,6 +10,7 @@ from io import BytesIO
 from dotenv import load_dotenv
 from flask import (
     Flask,
+    abort,
     flash,
     jsonify,
     redirect,
@@ -62,18 +63,22 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
 
-class Admin(UserMixin):
-    """Unique utilisateur de l'application."""
+class User(UserMixin):
+    """Utilisateur de l'application chargé depuis la table users."""
 
-    id = "admin"
+    def __init__(self, id, username, is_admin):
+        self.id = id
+        self.username = username
+        self.is_admin = is_admin
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Recharge l'utilisateur admin à partir de son identifiant de session."""
-    if user_id == Admin.id:
-        return Admin()
-    return None
+    """Recharge l'utilisateur à partir de son identifiant de session."""
+    row = database.get_utilisateur_par_id(int(user_id))
+    if row is None:
+        return None
+    return User(row["id"], row["username"], row["is_admin"])
 
 
 # --- Authentification --------------------------------------------------------
@@ -93,8 +98,9 @@ def login_post():
     username = request.form.get("username", "")
     password = request.form.get("password", "")
 
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-        login_user(Admin())
+    if database.verifier_password(username, password):
+        row = database.get_utilisateur_par_username(username)
+        login_user(User(row["id"], row["username"], row["is_admin"]))
         return redirect(url_for("index"))
 
     flash("Identifiants incorrects.", "danger")
@@ -117,7 +123,7 @@ def logout():
 def index():
     """Affiche toutes les candidatures, avec filtre optionnel par statut."""
     statut = request.args.get("statut")
-    toutes = database.get_toutes_candidatures()
+    toutes = database.get_toutes_candidatures(current_user.id)
 
     if statut:
         candidatures = [c for c in toutes if c["statut"] == statut]
@@ -190,7 +196,7 @@ def confirmer():
         "source": source,
     }
 
-    nouvel_id = database.ajouter_candidature(data)
+    nouvel_id = database.ajouter_candidature(data, current_user.id)
     flash("Candidature enregistrée.", "success")
     return redirect(url_for("detail", id=nouvel_id))
 
@@ -202,7 +208,7 @@ def confirmer():
 @login_required
 def detail(id):
     """Affiche le détail d'une candidature."""
-    candidature = database.get_candidature(id)
+    candidature = database.get_candidature(id, current_user.id)
     if candidature is None:
         flash("Candidature introuvable.", "danger")
         return redirect(url_for("index"))
@@ -218,7 +224,7 @@ def modifier(id):
     statut = request.form.get("statut", "En attente").strip() or "En attente"
     notes = request.form.get("notes", "").strip()
     date_entretien = request.form.get("date_entretien", "").strip() or None
-    database.modifier_candidature(id, statut, notes, date_entretien)
+    database.modifier_candidature(id, statut, notes, date_entretien, current_user.id)
     flash("Candidature mise à jour.", "success")
     return redirect(url_for("detail", id=id))
 
@@ -227,9 +233,65 @@ def modifier(id):
 @login_required
 def supprimer(id):
     """Supprime une candidature."""
-    database.supprimer_candidature(id)
+    database.supprimer_candidature(id, current_user.id)
     flash("Candidature supprimée.", "success")
     return redirect(url_for("index"))
+
+
+# --- Administration des utilisateurs -----------------------------------------
+
+MAX_USERS = 10
+
+
+@app.route("/admin/users", methods=["GET"])
+@login_required
+def admin_users():
+    """Affiche la liste des utilisateurs (réservé aux administrateurs)."""
+    if not current_user.is_admin:
+        abort(403)
+    users = database.get_tous_utilisateurs()
+    return render_template("admin.html", users=users, max_users=MAX_USERS)
+
+
+@app.route("/admin/users", methods=["POST"])
+@login_required
+def admin_users_create():
+    """Crée un nouvel utilisateur (réservé aux administrateurs)."""
+    if not current_user.is_admin:
+        abort(403)
+
+    if len(database.get_tous_utilisateurs()) >= MAX_USERS:
+        flash("Nombre maximum d'utilisateurs atteint (%d)." % MAX_USERS, "danger")
+        return redirect(url_for("admin_users"))
+
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "")
+    is_admin = request.form.get("is_admin") == "on"
+
+    if not username or not password:
+        flash("Nom d'utilisateur et mot de passe requis.", "danger")
+        return redirect(url_for("admin_users"))
+
+    nouvel_id = database.creer_utilisateur(username, password, is_admin)
+    if nouvel_id is None:
+        flash("Ce nom d'utilisateur est déjà pris.", "danger")
+    else:
+        flash("Utilisateur créé.", "success")
+    return redirect(url_for("admin_users"))
+
+
+@app.route("/admin/users/<int:id>/supprimer", methods=["POST"])
+@login_required
+def admin_users_delete(id):
+    """Supprime un utilisateur, sauf soi-même (réservé aux administrateurs)."""
+    if not current_user.is_admin:
+        abort(403)
+    if id == current_user.id:
+        flash("Vous ne pouvez pas supprimer votre propre compte.", "danger")
+        return redirect(url_for("admin_users"))
+    database.supprimer_utilisateur(id)
+    flash("Utilisateur supprimé.", "success")
+    return redirect(url_for("admin_users"))
 
 
 # --- Export PDF --------------------------------------------------------------
@@ -239,7 +301,7 @@ def supprimer(id):
 @login_required
 def export_tuteur():
     """Génère un PDF récapitulatif des candidatures à envoyer au tuteur."""
-    candidatures = database.get_toutes_candidatures_export()
+    candidatures = database.get_toutes_candidatures_export(current_user.id)
 
     tampon = BytesIO()
     doc = SimpleDocTemplate(
@@ -323,6 +385,11 @@ def export_tuteur():
 # --- Démarrage ---------------------------------------------------------------
 
 database.init_db()
+
+# Au premier démarrage, crée le compte admin depuis le .env si aucun user n'existe.
+if not database.get_tous_utilisateurs():
+    if ADMIN_USERNAME and ADMIN_PASSWORD:
+        database.creer_utilisateur(ADMIN_USERNAME, ADMIN_PASSWORD, is_admin=True)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

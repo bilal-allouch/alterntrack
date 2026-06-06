@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des utilisateurs · AlternTrack</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <style>
+        :root {
+            --blanc: #FFFFFF;
+            --jaune: #F5C518;
+            --texte: #1E293B;
+            --vert: #22C55E;
+            --rouge: #EF4444;
+            --fond: #F8FAFC;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--fond);
+            color: var(--texte);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            padding-bottom: 4rem;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--blanc);
+            box-shadow: 0 2px 12px rgba(30, 41, 59, 0.08);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--texte);
+            text-decoration: none;
+        }
+
+        .brand-title span {
+            color: var(--jaune);
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid #E2E8F0;
+            color: var(--texte);
+            border-radius: 0.6rem;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.15s ease;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--fond);
+            color: var(--texte);
+        }
+
+        .container-app {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .back-link {
+            color: #64748B;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: var(--texte);
+        }
+
+        .page-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 0.75rem 0 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .counter {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64748B;
+        }
+
+        .card-section {
+            background-color: var(--blanc);
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(30, 41, 59, 0.06);
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-heading {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+
+        .alert-flash {
+            border-radius: 0.7rem;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background-color: #ECFDF5;
+            color: #047857;
+            border: 1px solid #6EE7B7;
+        }
+
+        .alert-danger {
+            background-color: #FEF2F2;
+            color: #B91C1C;
+            border: 1px solid #FCA5A5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #64748B;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        tbody td {
+            padding: 0.85rem 0.5rem;
+            border-bottom: 1px solid #F1F5F9;
+            font-size: 0.92rem;
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .user-name {
+            font-weight: 700;
+        }
+
+        .badge-role {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-admin {
+            background-color: var(--jaune);
+            color: var(--texte);
+        }
+
+        .badge-user {
+            background-color: #E2E8F0;
+            color: #475569;
+        }
+
+        .cell-muted {
+            color: #64748B;
+            font-size: 0.85rem;
+        }
+
+        .btn-supprimer {
+            background-color: var(--rouge);
+            color: var(--blanc);
+            font-weight: 600;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.82rem;
+            transition: filter 0.15s ease;
+        }
+
+        .btn-supprimer:hover {
+            filter: brightness(0.95);
+            color: var(--blanc);
+        }
+
+        .self-tag {
+            color: #94A3B8;
+            font-size: 0.82rem;
+            font-style: italic;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--texte);
+        }
+
+        .form-control {
+            border: 1px solid #E2E8F0;
+            border-radius: 0.7rem;
+            color: var(--texte);
+            padding: 0.65rem 0.85rem;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--jaune);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--jaune);
+            border-color: var(--jaune);
+        }
+
+        .btn-creer {
+            background-color: var(--jaune);
+            color: var(--texte);
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7rem;
+            padding: 0.7rem 1.5rem;
+            transition: filter 0.15s ease;
+        }
+
+        .btn-creer:hover {
+            filter: brightness(0.95);
+            color: var(--texte);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            animation: fadeIn 0.25s ease;
+        }
+    </style>
+</head>
+<body>
+    {% macro date_fr(valeur) -%}
+        {%- if valeur and valeur|length >= 10 -%}
+            {{ valeur[8:10] }}/{{ valeur[5:7] }}/{{ valeur[0:4] }}
+        {%- else -%}
+            {{ valeur if valeur else "—" }}
+        {%- endif -%}
+    {%- endmacro %}
+
+    <header class="app-header">
+        <a href="{{ url_for('index') }}" class="brand-title"><img src="{{ url_for('static', filename='logo.svg') }}" alt="AlternTrack logo" style="height: 32px; width: auto; margin-right: 8px; vertical-align: middle;">Altern<span>Track</span></a>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+            <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+        </a>
+    </header>
+
+    <div class="container-app">
+        <a href="{{ url_for('index') }}" class="back-link">
+            <i class="bi bi-arrow-left me-1"></i>Retour au tableau de bord
+        </a>
+
+        <div class="page-head">
+            <h2 class="page-title">Gestion des utilisateurs</h2>
+            <span class="counter">{{ users | length }} / {{ max_users }} utilisateurs</span>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-flash alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card-section">
+            <div class="section-heading">
+                <i class="bi bi-people-fill me-1" style="color: var(--jaune);"></i>Utilisateurs
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Rôle</th>
+                        <th>Création</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td class="user-name">{{ u.username }}</td>
+                            <td>
+                                {% if u.is_admin %}
+                                    <span class="badge-role badge-admin">Admin</span>
+                                {% else %}
+                                    <span class="badge-role badge-user">Utilisateur</span>
+                                {% endif %}
+                            </td>
+                            <td class="cell-muted">{{ date_fr(u.created_at) }}</td>
+                            <td>
+                                {% if u.id == current_user.id %}
+                                    <span class="self-tag">Vous</span>
+                                {% else %}
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('admin_users_delete', id=u.id) }}"
+                                        onsubmit="return confirm('Supprimer l\'utilisateur {{ u.username }} ?');">
+                                        <button type="submit" class="btn-supprimer">
+                                            <i class="bi bi-trash3-fill me-1"></i>Supprimer
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-section">
+            <div class="section-heading">
+                <i class="bi bi-person-plus-fill me-1" style="color: var(--jaune);"></i>Créer un utilisateur
+            </div>
+            <form method="POST" action="{{ url_for('admin_users_create') }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" id="username" name="username" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin">
+                            <label class="form-check-label" for="is_admin">Administrateur</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn-creer">
+                            <i class="bi bi-check-lg me-1"></i>Créer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="page-progress" style="position: fixed; top: 0; left: 0; width: 0%; height: 4px; background-color: #F5C518; z-index: 2000; transition: width 0.3s ease;"></div>
+    <script>
+        (function () {
+            const barre = document.getElementById("page-progress");
+
+            function demarrer() {
+                barre.style.width = "0%";
+                void barre.offsetWidth;
+                barre.style.width = "80%";
+            }
+
+            function terminer() {
+                barre.style.width = "100%";
+                setTimeout(function () {
+                    barre.style.width = "0%";
+                }, 250);
+            }
+
+            document.addEventListener("click", function (e) {
+                const lien = e.target.closest("a[href]");
+                if (lien && lien.target !== "_blank" && !lien.getAttribute("href").startsWith("#")) {
+                    demarrer();
+                }
+            });
+
+            document.addEventListener("submit", function () {
+                demarrer();
+            });
+
+            window.addEventListener("pageshow", terminer);
+        })();
+    </script>
+</body>
+</html>
