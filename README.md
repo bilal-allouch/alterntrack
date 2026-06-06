@@ -1,32 +1,20 @@
 # AlternTrack
 
-Application web Flask pour suivre ses candidatures en alternance.
-Accès protégé par login. Un seul compte admin.
+Application web personnelle pour suivre mes candidatures en alternance.
+L'IA analyse mes descriptions et remplit automatiquement les informations.
+
+## Fonctionnalités
+- Ajout de candidatures par description en texte libre (IA Gemini / Groq)
+- Tableau de bord avec filtres par statut
+- Suivi des entretiens avec date et heure
+- Accès protégé par login
+- Interface responsive mobile et desktop
+
+## Statuts
+En attente · Entretien planifié · Retenu · Refusé · Sans réponse
 
 ## Stack
-- Python + Flask + Flask-Login
-- SQLite
-- Gemini 1.5 Flash (fallback Groq)
-- Bootstrap 5 (français)
+Python · Flask · SQLite · Gemini · Groq · Bootstrap 5
 
-## Fichiers
-- `app.py` → routes Flask
-- `database.py` → SQLite CRUD
-- `ai_extractor.py` → appel Gemini/Groq
-- `templates/` → login, index, ajouter, detail
-- `.env` → clés API et credentials admin
-
-## Base de données
-Table `candidatures` : id, entreprise, poste, type_contrat, localisation,
-date_candidature, lien_offre (optionnel), statut, notes, date_mise_a_jour
-
-Statuts : En attente / Entretien planifié / Retenu / Refusé / Sans réponse
-
-## Authentification
-Toutes les pages redirigent vers /login si non connecté.
-Credentials définis dans .env : ADMIN_USERNAME, ADMIN_PASSWORD
-
-## Lancement
-source venv/bin/activate
-python app.py
-→ http://localhost:5000
+## Déploiement
+Hébergé sur Render — accessible depuis n'importe quel appareil.
