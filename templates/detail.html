@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ candidature.entreprise }} · AlternTrack</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <style>
+        :root {
+            --blanc: #FFFFFF;
+            --jaune: #F5C518;
+            --texte: #1E293B;
+            --vert: #22C55E;
+            --rouge: #EF4444;
+            --fond: #F8FAFC;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--fond);
+            color: var(--texte);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            padding-bottom: 4rem;
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--blanc);
+            box-shadow: 0 2px 12px rgba(30, 41, 59, 0.08);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--texte);
+            text-decoration: none;
+        }
+
+        .brand-title span {
+            color: var(--jaune);
+        }
+
+        .btn-logout {
+            background-color: transparent;
+            border: 1px solid #E2E8F0;
+            color: var(--texte);
+            border-radius: 0.6rem;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.15s ease;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--fond);
+            color: var(--texte);
+        }
+
+        .container-app {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .back-link {
+            color: #64748B;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: var(--texte);
+        }
+
+        .page-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 0.75rem 0 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: #475569;
+            font-size: 1.05rem;
+            margin: 0.25rem 0 0;
+        }
+
+        .card-section {
+            background-color: var(--blanc);
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(30, 41, 59, 0.06);
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-heading {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.1rem;
+        }
+
+        .info-item .info-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #64748B;
+            margin-bottom: 0.2rem;
+        }
+
+        .info-item .info-value {
+            font-size: 0.98rem;
+            color: var(--texte);
+            word-break: break-word;
+        }
+
+        .info-notes {
+            grid-column: 1 / -1;
+            white-space: pre-wrap;
+        }
+
+        .badge-statut {
+            display: inline-block;
+            padding: 0.35rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--blanc);
+            white-space: nowrap;
+        }
+
+        .btn-offre {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 1.5rem;
+            background-color: var(--jaune);
+            color: var(--texte);
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1.2rem;
+            text-decoration: none;
+            transition: filter 0.15s ease;
+        }
+
+        .btn-offre:hover {
+            filter: brightness(0.95);
+            color: var(--texte);
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--texte);
+        }
+
+        .form-control,
+        .form-select {
+            border: 1px solid #E2E8F0;
+            border-radius: 0.7rem;
+            color: var(--texte);
+            padding: 0.65rem 0.85rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            box-shadow: none;
+            border-color: var(--jaune);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 110px;
+        }
+
+        .btn-enregistrer {
+            background-color: var(--texte);
+            color: var(--blanc);
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1.4rem;
+            transition: filter 0.15s ease;
+        }
+
+        .btn-enregistrer:hover {
+            filter: brightness(1.15);
+            color: var(--blanc);
+        }
+
+        .danger-zone {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .danger-text {
+            color: #64748B;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .btn-supprimer {
+            background-color: var(--rouge);
+            color: var(--blanc);
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1.4rem;
+            transition: filter 0.15s ease;
+        }
+
+        .btn-supprimer:hover {
+            filter: brightness(0.95);
+            color: var(--blanc);
+        }
+
+        @media (max-width: 560px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% set couleurs = {
+        "En attente": "#F5C518",
+        "Entretien planifié": "#3B82F6",
+        "Retenu": "#22C55E",
+        "Refusé": "#EF4444",
+        "Sans réponse": "#94A3B8"
+    } %}
+
+    {% macro date_fr(valeur) -%}
+        {%- if valeur and valeur|length >= 10 -%}
+            {{ valeur[8:10] }}/{{ valeur[5:7] }}/{{ valeur[0:4] }}
+        {%- else -%}
+            {{ valeur if valeur else "—" }}
+        {%- endif -%}
+    {%- endmacro %}
+
+    {% macro datetime_fr(valeur) -%}
+        {%- if valeur and valeur|length >= 16 -%}
+            {{ valeur[8:10] }}/{{ valeur[5:7] }}/{{ valeur[0:4] }} à {{ valeur[11:13] }}:{{ valeur[14:16] }}
+        {%- else -%}
+            {{ date_fr(valeur) }}
+        {%- endif -%}
+    {%- endmacro %}
+
+    <header class="app-header">
+        <a href="{{ url_for('index') }}" class="brand-title">Altern<span>Track</span></a>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+            <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+        </a>
+    </header>
+
+    <div class="container-app">
+        <a href="{{ url_for('index') }}" class="back-link">
+            <i class="bi bi-arrow-left me-1"></i>Retour au tableau de bord
+        </a>
+
+        <div class="page-head">
+            <div>
+                <h2 class="page-title">{{ candidature.entreprise }}</h2>
+                <p class="page-subtitle">{{ candidature.poste }}</p>
+            </div>
+            <span
+                class="badge-statut"
+                style="background-color: {{ couleurs.get(candidature.statut, '#94A3B8') }};">
+                {{ candidature.statut }}
+            </span>
+        </div>
+
+        <div class="card-section">
+            <div class="section-heading">
+                <i class="bi bi-info-circle-fill me-1" style="color: var(--jaune);"></i>Informations
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Entreprise</div>
+                    <div class="info-value">{{ candidature.entreprise }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Poste</div>
+                    <div class="info-value">{{ candidature.poste }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Type de contrat</div>
+                    <div class="info-value">{{ candidature.type_contrat }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Localisation</div>
+                    <div class="info-value">{{ candidature.localisation }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date de candidature</div>
+                    <div class="info-value">{{ date_fr(candidature.date_candidature) }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date d'entretien</div>
+                    <div class="info-value">
+                        {{ datetime_fr(candidature.date_entretien) if candidature.date_entretien else "—" }}
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Dernière mise à jour</div>
+                    <div class="info-value">{{ datetime_fr(candidature.date_mise_a_jour) }}</div>
+                </div>
+                <div class="info-item info-notes">
+                    <div class="info-label">Notes</div>
+                    <div class="info-value">{{ candidature.notes if candidature.notes else "—" }}</div>
+                </div>
+            </div>
+
+            {% if candidature.lien_offre %}
+                <a
+                    href="{{ candidature.lien_offre }}"
+                    class="btn-offre"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    <i class="bi bi-box-arrow-up-right"></i>Voir l'offre
+                </a>
+            {% endif %}
+        </div>
+
+        <div class="card-section">
+            <div class="section-heading">
+                <i class="bi bi-flag-fill me-1" style="color: var(--jaune);"></i>Modifier le statut
+            </div>
+            <form method="POST" action="{{ url_for('changer_statut', id=candidature.id) }}">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm">
+                        <label for="statut" class="form-label">Statut</label>
+                        <select id="statut" name="statut" class="form-select">
+                            {% for statut in statuts %}
+                                <option
+                                    value="{{ statut }}"
+                                    {% if statut == candidature.statut %}selected{% endif %}>
+                                    {{ statut }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-sm-auto">
+                        <button type="submit" class="btn-enregistrer">
+                            <i class="bi bi-check-lg me-1"></i>Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="card-entretien" class="card-section" style="display: none;">
+            <div class="section-heading">
+                <i class="bi bi-calendar-event-fill me-1" style="color: var(--jaune);"></i>Planifier un entretien
+            </div>
+            <form id="form-entretien" method="POST" action="{{ url_for('changer_entretien', id=candidature.id) }}">
+                <label class="form-label">Date et heure de l'entretien</label>
+                <div class="row g-2">
+                    <div class="col-sm">
+                        <input
+                            type="text"
+                            id="entretien_date"
+                            class="form-control"
+                            placeholder="JJ/MM/AAAA"
+                            value="{{ date_fr(candidature.date_entretien) if candidature.date_entretien else '' }}">
+                    </div>
+                    <div class="col-sm">
+                        <input
+                            type="time"
+                            id="entretien_heure"
+                            class="form-control"
+                            value="{{ candidature.date_entretien[11:16] if candidature.date_entretien else '' }}">
+                    </div>
+                </div>
+                <input type="hidden" id="date_entretien" name="date_entretien">
+                <button type="submit" class="btn-enregistrer mt-3">
+                    <i class="bi bi-check-lg me-1"></i>Enregistrer
+                </button>
+            </form>
+        </div>
+
+        <div class="card-section">
+            <div class="section-heading">
+                <i class="bi bi-pencil-fill me-1" style="color: var(--jaune);"></i>Modifier les notes
+            </div>
+            <form method="POST" action="{{ url_for('changer_notes', id=candidature.id) }}">
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea
+                        id="notes"
+                        name="notes"
+                        class="form-control"
+                        placeholder="Ajoutez vos remarques...">{{ candidature.notes if candidature.notes else "" }}</textarea>
+                </div>
+                <button type="submit" class="btn-enregistrer">
+                    <i class="bi bi-check-lg me-1"></i>Enregistrer
+                </button>
+            </form>
+        </div>
+
+        <div class="card-section">
+            <div class="danger-zone">
+                <p class="danger-text">
+                    Cette action est définitive et supprime la candidature.
+                </p>
+                <form
+                    method="POST"
+                    action="{{ url_for('supprimer', id=candidature.id) }}"
+                    onsubmit="return confirm('Supprimer définitivement cette candidature ?');">
+                    <button type="submit" class="btn-supprimer">
+                        <i class="bi bi-trash3-fill me-1"></i>Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const selectStatut = document.getElementById("statut");
+        const cardEntretien = document.getElementById("card-entretien");
+        const formEntretien = document.getElementById("form-entretien");
+        const champDate = document.getElementById("entretien_date");
+        const champHeure = document.getElementById("entretien_heure");
+        const champHidden = document.getElementById("date_entretien");
+
+        function majAffichageEntretien() {
+            cardEntretien.style.display =
+                selectStatut.value === "Entretien planifié" ? "block" : "none";
+        }
+
+        function normaliserDateFr(valeur) {
+            valeur = valeur.trim();
+            if (!valeur) {
+                return "";
+            }
+            const parts = valeur.split(/[\s/.\-]+/).filter(Boolean);
+            if (parts.length !== 3) {
+                return valeur;
+            }
+            const [jour, mois, annee] = parts;
+            if (!/^\d{1,2}$/.test(jour) || !/^\d{1,2}$/.test(mois) || !/^\d{4}$/.test(annee)) {
+                return valeur;
+            }
+            return jour.padStart(2, "0") + "/" + mois.padStart(2, "0") + "/" + annee;
+        }
+
+        function frVersIso(valeur) {
+            const m = valeur.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (!m) {
+                return "";
+            }
+            return m[3] + "-" + m[2] + "-" + m[1];
+        }
+
+        selectStatut.addEventListener("change", majAffichageEntretien);
+        majAffichageEntretien();
+
+        champDate.addEventListener("blur", function () {
+            champDate.value = normaliserDateFr(champDate.value);
+        });
+
+        formEntretien.addEventListener("submit", function () {
+            const iso = frVersIso(normaliserDateFr(champDate.value));
+            if (iso) {
+                const heure = champHeure.value || "00:00";
+                champHidden.value = iso + "T" + heure;
+            } else {
+                champHidden.value = "";
+            }
+        });
+    </script>
+</body>
+</html>
