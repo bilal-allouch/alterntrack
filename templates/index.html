@@ -207,6 +207,34 @@
             color: var(--texte);
         }
 
+        .filter-select {
+            display: none;
+            width: 100%;
+            border: 1px solid #E2E8F0;
+            border-radius: 0.7rem;
+            background-color: var(--blanc);
+            color: var(--texte);
+            padding: 0.6rem 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            box-shadow: none;
+            border-color: var(--jaune);
+        }
+
+        @media (max-width: 767px) {
+            .filters {
+                display: none;
+            }
+
+            .filter-select {
+                display: block;
+            }
+        }
+
         .pill {
             border: 1px solid #E2E8F0;
             background-color: var(--blanc);
@@ -500,6 +528,14 @@
                     </a>
                 {% endfor %}
             </div>
+            <select
+                class="filter-select"
+                onchange="if (this.value) { window.location = '{{ url_for('index') }}?statut=' + encodeURIComponent(this.value); } else { window.location = '{{ url_for('index') }}'; }">
+                <option value="" {% if not statut_actif %}selected{% endif %}>Tous les statuts</option>
+                {% for statut in statuts %}
+                    <option value="{{ statut }}" {% if statut_actif == statut %}selected{% endif %}>{{ statut }}</option>
+                {% endfor %}
+            </select>
             <a href="{{ url_for('export_tuteur') }}" class="btn-export">
                 <i class="bi bi-file-pdf me-1"></i>Exporter
             </a>
