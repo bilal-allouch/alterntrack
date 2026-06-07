@@ -891,21 +891,23 @@ table {
 }
 
 .export-menu {
-    display: none;
     position: absolute;
+    top: calc(100% + 0.5rem);
     right: 0;
-    top: calc(100% + 0.35rem);
+    left: auto;
     min-width: 200px;
     background-color: var(--blanc);
     border: 1px solid #E2E8F0;
     border-radius: 0.7rem;
-    box-shadow: 0 8px 20px rgba(30, 41, 59, 0.12);
-    padding: 0.4rem;
-    z-index: 1500;
+    box-shadow: 0 8px 24px rgba(30, 41, 59, 0.12);
+    z-index: 999;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .export-menu.open {
-    display: block;
+    display: flex;
 }
 
 .export-menu a {
@@ -942,6 +944,10 @@ table {
 
 .ent-table tbody tr {
     cursor: default;
+}
+
+#form-entreprise {
+    margin-top: 2rem;
 }
 
 .ent-hint {
@@ -1081,9 +1087,15 @@ table {
         width: 100%;
     }
 
+    .export-dropdown {
+        position: relative;
+        align-self: flex-start;
+    }
+
     .export-menu {
-        left: auto;
         right: 0;
+        left: auto;
+        min-width: 180px;
     }
 }
 
