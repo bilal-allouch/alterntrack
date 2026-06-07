@@ -278,6 +278,29 @@
         body {
             animation: fadeIn 0.25s ease;
         }
+
+        @media (max-width: 767px) {
+            #bloc-entretien .col-sm {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            #bloc-entretien .row > .col-sm + .col-sm {
+                margin-top: 0.75rem;
+            }
+
+            .btn-save {
+                width: 100%;
+            }
+
+            .danger-zone form {
+                width: 100%;
+            }
+
+            .btn-supprimer {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>

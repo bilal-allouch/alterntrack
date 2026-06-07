@@ -75,6 +75,62 @@
             color: var(--texte);
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--texte);
+            font-size: 24px;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            flex-direction: column;
+            background-color: var(--blanc);
+            box-shadow: 0 8px 20px rgba(30, 41, 59, 0.12);
+            padding: 0.5rem;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 0.85rem 1rem;
+            color: var(--texte);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 0.5rem;
+        }
+
+        .mobile-menu a:hover {
+            background-color: var(--fond);
+        }
+
+        @media (max-width: 767px) {
+            .header-actions {
+                display: none;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .mobile-menu.open {
+                display: flex;
+            }
+        }
+
         .container-app {
             max-width: 1000px;
             margin: 0 auto;
@@ -378,14 +434,29 @@
 
     <header class="app-header">
         <h1 class="brand-title">Altern<span>Track</span></h1>
-        {% if current_user.is_admin %}
-            <a href="{{ url_for('admin_users') }}" class="btn-logout">
-                <i class="bi bi-people-fill me-1"></i>Utilisateurs
+        <div class="header-actions">
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_users') }}" class="btn-logout">
+                    <i class="bi bi-people-fill me-1"></i>Utilisateurs
+                </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="btn-logout">
+                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
             </a>
-        {% endif %}
-        <a href="{{ url_for('logout') }}" class="btn-logout">
-            <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
-        </a>
+        </div>
+        <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Menu">
+            <i class="bi bi-list"></i>
+        </button>
+        <div id="mobile-menu" class="mobile-menu">
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_users') }}">
+                    <i class="bi bi-people-fill me-1"></i>Utilisateurs
+                </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+            </a>
+        </div>
     </header>
 
     <div class="container-app">
@@ -498,6 +569,24 @@
     <a href="{{ url_for('ajouter') }}" class="fab" title="Ajouter une candidature">
         <i class="bi bi-plus"></i>
     </a>
+    <script>
+        (function () {
+            const toggle = document.getElementById("menu-toggle");
+            const menu = document.getElementById("mobile-menu");
+
+            toggle.addEventListener("click", function (e) {
+                e.stopPropagation();
+                menu.classList.toggle("open");
+            });
+
+            document.addEventListener("click", function (e) {
+                if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+                    menu.classList.remove("open");
+                }
+            });
+        })();
+    </script>
+
     <div id="page-progress" style="position: fixed; top: 0; left: 0; width: 0%; height: 4px; background-color: #F5C518; z-index: 2000; transition: width 0.3s ease;"></div>
     <script>
         (function () {

@@ -258,6 +258,32 @@
             color: var(--texte);
         }
 
+        .users-cards {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .user-card {
+            border: 1px solid #F1F5F9;
+            border-radius: 0.85rem;
+            padding: 1rem 1.1rem;
+        }
+
+        .user-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .user-card-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0.85rem;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -265,6 +291,20 @@
 
         body {
             animation: fadeIn 0.25s ease;
+        }
+
+        @media (max-width: 767px) {
+            .users-table {
+                display: none;
+            }
+
+            .users-cards {
+                display: flex;
+            }
+
+            .btn-creer {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -306,7 +346,7 @@
             <div class="section-heading">
                 <i class="bi bi-people-fill me-1" style="color: var(--jaune);"></i>Utilisateurs
             </div>
-            <table>
+            <table class="users-table">
                 <thead>
                     <tr>
                         <th>Utilisateur</th>
@@ -345,6 +385,36 @@
                     {% endfor %}
                 </tbody>
             </table>
+
+            <div class="users-cards">
+                {% for u in users %}
+                    <div class="user-card">
+                        <div class="user-card-top">
+                            <span class="user-name">{{ u.username }}</span>
+                            {% if u.is_admin %}
+                                <span class="badge-role badge-admin">Admin</span>
+                            {% else %}
+                                <span class="badge-role badge-user">Utilisateur</span>
+                            {% endif %}
+                        </div>
+                        <div class="cell-muted">Créé le {{ date_fr(u.created_at) }}</div>
+                        <div class="user-card-actions">
+                            {% if u.id == current_user.id %}
+                                <span class="self-tag">Vous</span>
+                            {% else %}
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('admin_users_delete', id=u.id) }}"
+                                    onsubmit="return confirm('Supprimer l\'utilisateur {{ u.username }} ?');">
+                                    <button type="submit" class="btn-supprimer">
+                                        <i class="bi bi-trash3-fill me-1"></i>Supprimer
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="card-section">
