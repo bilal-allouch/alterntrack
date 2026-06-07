@@ -886,6 +886,105 @@ table {
     margin-top: 0.85rem;
 }
 
+.export-dropdown {
+    position: relative;
+}
+
+.export-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.35rem);
+    min-width: 200px;
+    background-color: var(--blanc);
+    border: 1px solid #E2E8F0;
+    border-radius: 0.7rem;
+    box-shadow: 0 8px 20px rgba(30, 41, 59, 0.12);
+    padding: 0.4rem;
+    z-index: 1500;
+}
+
+.export-menu.open {
+    display: block;
+}
+
+.export-menu a {
+    display: block;
+    padding: 0.6rem 0.85rem;
+    color: var(--texte);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+}
+
+.export-menu a:hover {
+    background-color: var(--fond);
+}
+
+.btn-visiter {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--jaune);
+    color: var(--texte);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn-visiter:hover {
+    filter: brightness(0.95);
+    color: var(--texte);
+}
+
+.ent-table tbody tr {
+    cursor: default;
+}
+
+.ent-hint {
+    color: #64748B;
+    font-size: 0.85rem;
+    margin: -0.5rem 0 1.25rem;
+}
+
+.ent-card {
+    background-color: var(--blanc);
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(30, 41, 59, 0.06);
+    padding: 1.1rem 1.25rem;
+}
+
+.ent-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.ent-nom {
+    font-weight: 700;
+    color: var(--texte);
+}
+
+.ent-line {
+    color: #475569;
+    font-size: 0.88rem;
+    margin-top: 0.25rem;
+    word-break: break-word;
+}
+
+.ent-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }

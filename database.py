@@ -116,6 +116,20 @@ def init_db():
 
         cur.execute(
             """
+            CREATE TABLE IF NOT EXISTS entreprises (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                nom TEXT NOT NULL,
+                lien TEXT,
+                telephone TEXT,
+                email TEXT,
+                date_ajout TEXT NOT NULL
+            )
+            """
+        )
+
+        cur.execute(
+            """
             SELECT column_name
             FROM information_schema.columns
             WHERE table_name = 'candidatures'
@@ -284,6 +298,77 @@ def supprimer_candidature(id, user_id):
         (id, user_id),
         commit=True,
     )
+
+
+# --- Entreprises -------------------------------------------------------------
+
+
+def ajouter_entreprise(data, user_id):
+    """Insère une entreprise pour un utilisateur et retourne son id."""
+    ligne = _run(
+        """
+        INSERT INTO entreprises (user_id, nom, lien, telephone, email, date_ajout)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING id
+        """,
+        (
+            user_id,
+            data.get("nom"),
+            data.get("lien"),
+            data.get("telephone"),
+            data.get("email"),
+            _maintenant(),
+        ),
+        fetch="one",
+        commit=True,
+    )
+    return ligne["id"]
+
+
+def get_toutes_entreprises(user_id):
+    """Retourne les entreprises d'un utilisateur, de la plus récente à l'ancienne."""
+    return _run(
+        """
+        SELECT * FROM entreprises
+        WHERE user_id = %s
+        ORDER BY date_ajout DESC, id DESC
+        """,
+        (user_id,),
+        fetch="all",
+    )
+
+
+def get_entreprise(id, user_id):
+    """Retourne une entreprise si elle appartient à l'utilisateur, sinon None."""
+    return _run(
+        "SELECT * FROM entreprises WHERE id = %s AND user_id = %s",
+        (id, user_id),
+        fetch="one",
+    )
+
+
+def supprimer_entreprise(id, user_id):
+    """Supprime une entreprise si elle appartient à l'utilisateur."""
+    _run(
+        "DELETE FROM entreprises WHERE id = %s AND user_id = %s",
+        (id, user_id),
+        commit=True,
+    )
+
+
+def get_toutes_entreprises_export(user_id):
+    """Retourne les entreprises d'un utilisateur en dictionnaires pour l'export."""
+    lignes = _run(
+        """
+        SELECT nom, lien, telephone, email, date_ajout
+        FROM entreprises
+        WHERE user_id = %s
+        ORDER BY date_ajout DESC, id DESC
+        """,
+        (user_id,),
+        fetch="all",
+    )
+    return [dict(ligne) for ligne in lignes]
 
 
 if __name__ == "__main__":

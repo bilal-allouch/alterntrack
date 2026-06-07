@@ -241,6 +241,45 @@ def supprimer(id):
     return redirect(url_for("index"))
 
 
+# --- Carnet d'entreprises ----------------------------------------------------
+
+
+@app.route("/entreprises", methods=["GET"])
+@login_required
+def entreprises():
+    """Affiche le carnet d'entreprises de l'utilisateur."""
+    liste = database.get_toutes_entreprises(current_user.id)
+    return render_template("entreprises.html", entreprises=liste)
+
+
+@app.route("/entreprises/ajouter", methods=["POST"])
+@login_required
+def entreprises_ajouter():
+    """Enregistre une nouvelle entreprise."""
+    data = {
+        "nom": request.form.get("nom", "").strip(),
+        "lien": (request.form.get("lien") or "").strip() or None,
+        "telephone": (request.form.get("telephone") or "").strip() or None,
+        "email": (request.form.get("email") or "").strip() or None,
+    }
+    if not data["nom"]:
+        flash("Le nom de l'entreprise est requis.", "danger")
+        return redirect(url_for("entreprises"))
+
+    database.ajouter_entreprise(data, current_user.id)
+    flash("Entreprise enregistrée.", "success")
+    return redirect(url_for("entreprises"))
+
+
+@app.route("/entreprises/<int:id>/supprimer", methods=["POST"])
+@login_required
+def entreprises_supprimer(id):
+    """Supprime une entreprise."""
+    database.supprimer_entreprise(id, current_user.id)
+    flash("Entreprise supprimée.", "success")
+    return redirect(url_for("entreprises"))
+
+
 # --- Administration des utilisateurs -----------------------------------------
 
 MAX_USERS = 10
@@ -377,6 +416,86 @@ def export_tuteur():
     tampon.seek(0)
 
     nom_fichier = "candidatures_%s.pdf" % datetime.now().strftime("%Y-%m-%d")
+    return send_file(
+        tampon,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=nom_fichier,
+    )
+
+
+@app.route("/export/entreprises")
+@login_required
+def export_entreprises():
+    """Génère un PDF du carnet d'entreprises."""
+    liste = database.get_toutes_entreprises_export(current_user.id)
+
+    tampon = BytesIO()
+    doc = SimpleDocTemplate(
+        tampon,
+        pagesize=A4,
+        topMargin=2 * cm,
+        bottomMargin=2 * cm,
+        leftMargin=1.5 * cm,
+        rightMargin=1.5 * cm,
+    )
+
+    styles = getSampleStyleSheet()
+    titre_style = styles["Title"]
+    titre_style.textColor = colors.black
+    sous_titre_style = styles["Normal"]
+    cellule_style = styles["BodyText"]
+    cellule_style.fontSize = 9
+    cellule_style.leading = 11
+
+    elements = [
+        Paragraph("Carnet d'entreprises", titre_style),
+        Spacer(1, 0.2 * cm),
+        Paragraph(datetime.now().strftime("%d/%m/%Y"), sous_titre_style),
+        Spacer(1, 0.6 * cm),
+    ]
+
+    entetes = ["Entreprise", "Lien", "Téléphone", "Email", "Date"]
+    donnees = [[Paragraph("<b>%s</b>" % e, cellule_style) for e in entetes]]
+
+    for e in liste:
+        date_ajout = (e.get("date_ajout") or "")[:10]
+        if len(date_ajout) == 10:
+            date_ajout = "%s/%s/%s" % (date_ajout[8:10], date_ajout[5:7], date_ajout[0:4])
+        donnees.append(
+            [
+                Paragraph(e.get("nom") or "", cellule_style),
+                Paragraph(e.get("lien") or "", cellule_style),
+                Paragraph(e.get("telephone") or "", cellule_style),
+                Paragraph(e.get("email") or "", cellule_style),
+                Paragraph(date_ajout, cellule_style),
+            ]
+        )
+
+    tableau = Table(
+        donnees,
+        colWidths=[3.8 * cm, 4.2 * cm, 2.6 * cm, 3.9 * cm, 2.5 * cm],
+        repeatRows=1,
+    )
+    tableau.setStyle(
+        TableStyle(
+            [
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("BACKGROUND", (0, 0), (-1, 0), colors.white),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ]
+        )
+    )
+    elements.append(tableau)
+
+    doc.build(elements)
+    tampon.seek(0)
+
+    nom_fichier = "entreprises_%s.pdf" % datetime.now().strftime("%Y-%m-%d")
     return send_file(
         tampon,
         mimetype="application/pdf",

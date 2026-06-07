@@ -33,6 +33,9 @@
     <header class="app-header">
         <h1 class="brand-title">Altern<span>Track</span></h1>
         <div class="header-actions">
+            <a href="{{ url_for('entreprises') }}" class="btn-logout">
+                <i class="bi bi-building me-1"></i>Entreprises
+            </a>
             {% if current_user.is_admin %}
                 <a href="{{ url_for('admin_users') }}" class="btn-logout">
                     <i class="bi bi-people-fill me-1"></i>Utilisateurs
@@ -46,6 +49,9 @@
             <i class="bi bi-list"></i>
         </button>
         <div id="mobile-menu" class="mobile-menu">
+            <a href="{{ url_for('entreprises') }}">
+                <i class="bi bi-building me-1"></i>Entreprises
+            </a>
             {% if current_user.is_admin %}
                 <a href="{{ url_for('admin_users') }}">
                     <i class="bi bi-people-fill me-1"></i>Utilisateurs
@@ -106,9 +112,15 @@
                     <option value="{{ statut }}" {% if statut_actif == statut %}selected{% endif %}>{{ statut }}</option>
                 {% endfor %}
             </select>
-            <a href="{{ url_for('export_tuteur') }}" class="btn-export">
-                <i class="bi bi-file-pdf me-1"></i>Exporter
-            </a>
+            <div class="export-dropdown">
+                <button type="button" id="export-toggle" class="btn-export">
+                    <i class="bi bi-file-pdf me-1"></i>Exporter <i class="bi bi-caret-down-fill ms-1"></i>
+                </button>
+                <div id="export-menu" class="export-menu">
+                    <a href="{{ url_for('export_tuteur') }}">Candidatures (PDF)</a>
+                    <a href="{{ url_for('export_entreprises') }}">Entreprises (PDF)</a>
+                </div>
+            </div>
         </div>
 
         {% if candidatures %}
@@ -175,55 +187,8 @@
     <a href="{{ url_for('ajouter') }}" class="fab" title="Ajouter une candidature">
         <i class="bi bi-plus"></i>
     </a>
-    <script>
-        (function () {
-            const toggle = document.getElementById("menu-toggle");
-            const menu = document.getElementById("mobile-menu");
-
-            toggle.addEventListener("click", function (e) {
-                e.stopPropagation();
-                menu.classList.toggle("open");
-            });
-
-            document.addEventListener("click", function (e) {
-                if (!menu.contains(e.target) && !toggle.contains(e.target)) {
-                    menu.classList.remove("open");
-                }
-            });
-        })();
-    </script>
 
     <div id="page-progress" style="position: fixed; top: 0; left: 0; width: 0%; height: 4px; background-color: #F5C518; z-index: 2000; transition: width 0.3s ease;"></div>
-    <script>
-        (function () {
-            const barre = document.getElementById("page-progress");
-
-            function demarrer() {
-                barre.style.width = "0%";
-                void barre.offsetWidth;
-                barre.style.width = "80%";
-            }
-
-            function terminer() {
-                barre.style.width = "100%";
-                setTimeout(function () {
-                    barre.style.width = "0%";
-                }, 250);
-            }
-
-            document.addEventListener("click", function (e) {
-                const lien = e.target.closest("a[href]");
-                if (lien && lien.target !== "_blank" && !lien.getAttribute("href").startsWith("#")) {
-                    demarrer();
-                }
-            });
-
-            document.addEventListener("submit", function () {
-                demarrer();
-            });
-
-            window.addEventListener("pageshow", terminer);
-        })();
-    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

@@ -57,7 +57,8 @@
             <div id="error-box" class="error-box"></div>
         </div>
 
-        <div id="confirm-section" class="card-section confirm-section">
+        <div id="confirm-section" class="confirm-section">
+            <div class="card-section">
             <div class="section-heading">
                 <i class="bi bi-check-circle-fill me-1"></i>Vérifiez et enregistrez
             </div>
@@ -131,175 +132,43 @@
                     </div>
                 </div>
             </form>
+            </div>
+
+            <div class="card-section">
+                <div class="section-heading">
+                    <i class="bi bi-building me-1" style="color: var(--jaune);"></i>Informations entreprise
+                </div>
+                <p class="ent-hint">Optionnel — enregistrez l'entreprise dans votre carnet.</p>
+                <form method="POST" action="{{ url_for('entreprises_ajouter') }}">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="ent_nom" class="form-label">Nom</label>
+                            <input type="text" id="ent_nom" name="nom" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ent_lien" class="form-label">Lien (site web)</label>
+                            <input type="url" id="ent_lien" name="lien" class="form-control" placeholder="https://...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ent_telephone" class="form-label">Téléphone</label>
+                            <input type="text" id="ent_telephone" name="telephone" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ent_email" class="form-label">Email</label>
+                            <input type="email" id="ent_email" name="email" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn-creer">
+                                <i class="bi bi-building-add me-1"></i>Enregistrer l'entreprise
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script>
-        const btn = document.getElementById("btn-analyser");
-        const loader = document.getElementById("loader");
-        const errorBox = document.getElementById("error-box");
-        const confirmSection = document.getElementById("confirm-section");
-
-        function isoVersFr(valeur) {
-            if (!valeur) {
-                return "";
-            }
-            const m = valeur.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            if (!m) {
-                return valeur;
-            }
-            return m[3] + "/" + m[2] + "/" + m[1];
-        }
-
-        function normaliserDateFr(valeur) {
-            valeur = valeur.trim();
-            if (!valeur) {
-                return "";
-            }
-            const parts = valeur.split(/[\s/.\-]+/).filter(Boolean);
-            if (parts.length !== 3) {
-                return valeur;
-            }
-            const [jour, mois, annee] = parts;
-            if (!/^\d{1,2}$/.test(jour) || !/^\d{1,2}$/.test(mois) || !/^\d{4}$/.test(annee)) {
-                return valeur;
-            }
-            return jour.padStart(2, "0") + "/" + mois.padStart(2, "0") + "/" + annee;
-        }
-
-        function setSelectValue(select, value) {
-            if (!value) {
-                return;
-            }
-            let trouve = false;
-            for (const option of select.options) {
-                if (option.value === value) {
-                    trouve = true;
-                    break;
-                }
-            }
-            if (!trouve) {
-                const opt = document.createElement("option");
-                opt.value = value;
-                opt.textContent = value;
-                select.appendChild(opt);
-            }
-            select.value = value;
-        }
-
-        async function analyser() {
-            const texte = document.getElementById("texte").value.trim();
-            const lienSource = document.getElementById("lien_source").value.trim();
-
-            errorBox.classList.remove("show");
-            errorBox.textContent = "";
-
-            if (!texte) {
-                errorBox.textContent = "Veuillez décrire votre candidature avant d'analyser.";
-                errorBox.classList.add("show");
-                return;
-            }
-
-            btn.disabled = true;
-            loader.classList.add("show");
-            confirmSection.classList.remove("show");
-
-            try {
-                const formData = new FormData();
-                formData.append("texte", texte);
-
-                const reponse = await fetch("{{ url_for('ajouter_post') }}", {
-                    method: "POST",
-                    body: formData
-                });
-
-                const data = await reponse.json();
-
-                if (!reponse.ok || data.erreur) {
-                    throw new Error(data.erreur || "L'analyse a échoué. Réessayez.");
-                }
-
-                document.getElementById("entreprise").value = data.entreprise || "";
-                document.getElementById("poste").value = data.poste || "";
-                document.getElementById("localisation").value = data.localisation || "";
-                document.getElementById("date_candidature").value = isoVersFr(data.date_candidature);
-                document.getElementById("notes").value = data.notes || "";
-                document.getElementById("lien_offre").value = lienSource || data.lien_offre || "";
-
-                setSelectValue(document.getElementById("type_contrat"), data.type_contrat);
-                setSelectValue(document.getElementById("statut"), data.statut || "En attente");
-                setSelectValue(document.getElementById("source"), data.source || "Autre");
-                majAffichageSourceAutre();
-
-                confirmSection.classList.add("show");
-                confirmSection.scrollIntoView({ behavior: "smooth" });
-            } catch (erreur) {
-                errorBox.textContent = erreur.message;
-                errorBox.classList.add("show");
-            } finally {
-                loader.classList.remove("show");
-                btn.disabled = false;
-            }
-        }
-
-        btn.addEventListener("click", analyser);
-
-        const champDate = document.getElementById("date_candidature");
-        champDate.addEventListener("blur", function () {
-            champDate.value = normaliserDateFr(champDate.value);
-        });
-
-        const selectSource = document.getElementById("source");
-        const sourceAutreWrap = document.getElementById("source-autre-wrap");
-        const champSourceAutre = document.getElementById("source_autre");
-        const formConfirmer = document.getElementById("form-confirmer");
-
-        function majAffichageSourceAutre() {
-            sourceAutreWrap.style.display = selectSource.value === "Autre" ? "block" : "none";
-        }
-
-        selectSource.addEventListener("change", majAffichageSourceAutre);
-
-        formConfirmer.addEventListener("submit", function () {
-            if (selectSource.value === "Autre") {
-                const precision = champSourceAutre.value.trim();
-                if (precision) {
-                    setSelectValue(selectSource, precision);
-                }
-            }
-        });
-    </script>
     <div id="page-progress" style="position: fixed; top: 0; left: 0; width: 0%; height: 4px; background-color: #F5C518; z-index: 2000; transition: width 0.3s ease;"></div>
-    <script>
-        (function () {
-            const barre = document.getElementById("page-progress");
-
-            function demarrer() {
-                barre.style.width = "0%";
-                void barre.offsetWidth;
-                barre.style.width = "80%";
-            }
-
-            function terminer() {
-                barre.style.width = "100%";
-                setTimeout(function () {
-                    barre.style.width = "0%";
-                }, 250);
-            }
-
-            document.addEventListener("click", function (e) {
-                const lien = e.target.closest("a[href]");
-                if (lien && lien.target !== "_blank" && !lien.getAttribute("href").startsWith("#")) {
-                    demarrer();
-                }
-            });
-
-            document.addEventListener("submit", function () {
-                demarrer();
-            });
-
-            window.addEventListener("pageshow", terminer);
-        })();
-    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

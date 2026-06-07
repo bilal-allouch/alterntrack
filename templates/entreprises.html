@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes entreprises · AlternTrack</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% macro date_fr(valeur) -%}
+        {%- if valeur and valeur|length >= 10 -%}
+            {{ valeur[8:10] }}/{{ valeur[5:7] }}/{{ valeur[0:4] }}
+        {%- else -%}
+            {{ valeur if valeur else "—" }}
+        {%- endif -%}
+    {%- endmacro %}
+
+    <header class="app-header">
+        <a href="{{ url_for('index') }}" class="brand-title">Altern<span>Track</span></a>
+        <div class="header-actions">
+            <a href="{{ url_for('index') }}" class="btn-logout">
+                <i class="bi bi-briefcase-fill me-1"></i>Candidatures
+            </a>
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_users') }}" class="btn-logout">
+                    <i class="bi bi-people-fill me-1"></i>Utilisateurs
+                </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="btn-logout">
+                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+            </a>
+        </div>
+        <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Menu">
+            <i class="bi bi-list"></i>
+        </button>
+        <div id="mobile-menu" class="mobile-menu">
+            <a href="{{ url_for('index') }}">
+                <i class="bi bi-briefcase-fill me-1"></i>Candidatures
+            </a>
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_users') }}">
+                    <i class="bi bi-people-fill me-1"></i>Utilisateurs
+                </a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}">
+                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+            </a>
+        </div>
+    </header>
+
+    <div class="container-app">
+        <div class="page-head">
+            <h2 class="page-title">Mes entreprises</h2>
+            <a href="{{ url_for('export_entreprises') }}" class="btn-export">
+                <i class="bi bi-file-pdf me-1"></i>Exporter
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-flash alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if entreprises %}
+            <div class="table-card">
+                <table class="ent-table">
+                    <thead>
+                        <tr>
+                            <th>Entreprise</th>
+                            <th>Lien</th>
+                            <th>Téléphone</th>
+                            <th>Email</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in entreprises %}
+                            <tr>
+                                <td class="cell-entreprise">{{ e.nom }}</td>
+                                <td>
+                                    {% if e.lien %}
+                                        <a href="{{ e.lien }}" class="btn-visiter" target="_blank" rel="noopener noreferrer">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i>Visiter
+                                        </a>
+                                    {% else %}
+                                        <span class="cell-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="cell-muted">{{ e.telephone if e.telephone else "—" }}</td>
+                                <td class="cell-muted">{{ e.email if e.email else "—" }}</td>
+                                <td class="cell-muted">{{ date_fr(e.date_ajout) }}</td>
+                                <td>
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('entreprises_supprimer', id=e.id) }}"
+                                        onsubmit="return confirm('Supprimer {{ e.nom }} ?');">
+                                        <button type="submit" class="btn-supprimer">
+                                            <i class="bi bi-trash3-fill me-1"></i>Supprimer
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mobile-cards">
+                {% for e in entreprises %}
+                    <div class="ent-card">
+                        <div class="ent-card-top">
+                            <span class="ent-nom">{{ e.nom }}</span>
+                            <span class="cell-muted">{{ date_fr(e.date_ajout) }}</span>
+                        </div>
+                        {% if e.telephone %}
+                            <div class="ent-line"><i class="bi bi-telephone me-1"></i>{{ e.telephone }}</div>
+                        {% endif %}
+                        {% if e.email %}
+                            <div class="ent-line"><i class="bi bi-envelope me-1"></i>{{ e.email }}</div>
+                        {% endif %}
+                        <div class="ent-card-actions">
+                            {% if e.lien %}
+                                <a href="{{ e.lien }}" class="btn-visiter" target="_blank" rel="noopener noreferrer">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Visiter
+                                </a>
+                            {% else %}
+                                <span></span>
+                            {% endif %}
+                            <form
+                                method="POST"
+                                action="{{ url_for('entreprises_supprimer', id=e.id) }}"
+                                onsubmit="return confirm('Supprimer {{ e.nom }} ?');">
+                                <button type="submit" class="btn-supprimer">
+                                    <i class="bi bi-trash3-fill me-1"></i>Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-card">
+                <div class="empty-state">
+                    <div><i class="bi bi-building"></i></div>
+                    <p class="mb-0">Aucune entreprise enregistrée.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="card-section" id="form-entreprise">
+            <div class="section-heading">
+                <i class="bi bi-plus-circle-fill me-1" style="color: var(--jaune);"></i>Ajouter une entreprise
+            </div>
+            <form method="POST" action="{{ url_for('entreprises_ajouter') }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" id="nom" name="nom" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lien" class="form-label">Lien (site web)</label>
+                        <input type="url" id="lien" name="lien" class="form-control" placeholder="https://...">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="text" id="telephone" name="telephone" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn-creer">
+                            <i class="bi bi-check-lg me-1"></i>Ajouter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <a href="#form-entreprise" id="fab-ajout" class="fab" title="Ajouter une entreprise">
+        <i class="bi bi-plus"></i>
+    </a>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

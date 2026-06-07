@@ -28,6 +28,8 @@ CHAMPS = [
     "statut",
     "notes",
     "source",
+    "telephone",
+    "email",
 ]
 
 PROMPT = """Tu es un assistant qui extrait les informations d'une offre ou d'une \
@@ -47,9 +49,11 @@ code markdown. Le JSON doit contenir exactement ces clés :
 - "source" : origine de l'offre parmi ces valeurs exactes : "LinkedIn", \
 "HelloWork", "Welcome to the Jungle", "Indeed", "Google", "APEC", "Pôle Emploi", \
 "Site de l'entreprise", "Autre". Si non mentionné dans le texte, mettre "Autre".
+- "telephone" : numéro de téléphone si mentionné, sinon null
+- "email" : email de contact si mentionné, sinon null
 
 Si une information est absente du texte, mets une chaîne vide "" (ou null pour \
-"lien_offre"). Ne devine pas d'URL.
+"lien_offre", "telephone", "email"). Ne devine pas d'URL.
 
 Texte à analyser :
 \"\"\"
