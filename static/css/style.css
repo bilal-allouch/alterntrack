@@ -1080,6 +1080,11 @@ table {
     .btn-creer {
         width: 100%;
     }
+
+    .export-menu {
+        left: auto;
+        right: 0;
+    }
 }
 
 @media (max-width: 560px) {
