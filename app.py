@@ -187,6 +187,8 @@ def confirmer():
     if source == "Autre":
         source = request.form.get("source_autre", "").strip() or "Autre"
 
+    type_candidature = request.form.get("type_candidature", "").strip() or "Offre publiée"
+
     data = {
         "entreprise": request.form.get("entreprise", "").strip(),
         "poste": request.form.get("poste", "").strip(),
@@ -197,9 +199,24 @@ def confirmer():
         "statut": request.form.get("statut", "En attente").strip() or "En attente",
         "notes": request.form.get("notes", "").strip(),
         "source": source,
+        "type_candidature": type_candidature,
+        "contact_nom": (request.form.get("contact_nom") or "").strip() or None,
+        "contact_lien": (request.form.get("contact_lien") or "").strip() or None,
     }
 
     nouvel_id = database.ajouter_candidature(data, current_user.id)
+
+    if request.form.get("enregistrer_entreprise") == "on":
+        ent_nom = request.form.get("ent_nom", "").strip()
+        if ent_nom:
+            ent_data = {
+                "nom": ent_nom,
+                "lien": (request.form.get("ent_lien") or "").strip() or None,
+                "telephone": (request.form.get("ent_telephone") or "").strip() or None,
+                "email": (request.form.get("ent_email") or "").strip() or None,
+            }
+            database.ajouter_entreprise(ent_data, current_user.id)
+
     flash("Candidature enregistrée.", "success")
     return redirect(url_for("detail", id=nouvel_id))
 

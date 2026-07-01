@@ -956,6 +956,25 @@ table {
     margin: -0.5rem 0 1.25rem;
 }
 
+.confirm-divider {
+    border: none;
+    border-top: 1px solid #E2E8F0;
+    margin: 1.75rem 0 1.25rem;
+}
+
+.ent-toggle-label {
+    font-weight: 700;
+    color: var(--texte);
+}
+
+#entreprise-fields-wrap {
+    margin-top: 0.25rem;
+}
+
+#contact-fields-wrap {
+    margin-top: -0.5rem;
+}
+
 .ent-card {
     background-color: var(--blanc);
     border-radius: 1rem;

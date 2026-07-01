@@ -108,6 +108,9 @@ def init_db():
                 notes TEXT,
                 date_entretien TEXT,
                 source TEXT,
+                type_candidature TEXT,
+                contact_nom TEXT,
+                contact_lien TEXT,
                 user_id INTEGER,
                 date_mise_a_jour TEXT NOT NULL
             )
@@ -142,6 +145,12 @@ def init_db():
             cur.execute("ALTER TABLE candidatures ADD COLUMN source TEXT")
         if "user_id" not in colonnes:
             cur.execute("ALTER TABLE candidatures ADD COLUMN user_id INTEGER")
+        if "type_candidature" not in colonnes:
+            cur.execute("ALTER TABLE candidatures ADD COLUMN type_candidature TEXT")
+        if "contact_nom" not in colonnes:
+            cur.execute("ALTER TABLE candidatures ADD COLUMN contact_nom TEXT")
+        if "contact_lien" not in colonnes:
+            cur.execute("ALTER TABLE candidatures ADD COLUMN contact_lien TEXT")
 
         conn.commit()
         cur.close()
@@ -216,8 +225,9 @@ def ajouter_candidature(data, user_id):
         INSERT INTO candidatures (
             entreprise, poste, type_contrat, localisation,
             date_candidature, lien_offre, statut, notes, date_entretien,
-            source, user_id, date_mise_a_jour
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            source, type_candidature, contact_nom, contact_lien, user_id,
+            date_mise_a_jour
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
         """,
         (
@@ -231,6 +241,9 @@ def ajouter_candidature(data, user_id):
             data.get("notes"),
             data.get("date_entretien"),
             data.get("source"),
+            data.get("type_candidature"),
+            data.get("contact_nom"),
+            data.get("contact_lien"),
             user_id,
             maintenant,
         ),

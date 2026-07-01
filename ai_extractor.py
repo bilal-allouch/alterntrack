@@ -30,6 +30,9 @@ CHAMPS = [
     "source",
     "telephone",
     "email",
+    "type_candidature",
+    "contact_nom",
+    "contact_lien",
 ]
 
 PROMPT = """Tu es un assistant qui extrait les informations d'une offre ou d'une \
@@ -51,9 +54,16 @@ code markdown. Le JSON doit contenir exactement ces clés :
 "Site de l'entreprise", "Autre". Si non mentionné dans le texte, mettre "Autre".
 - "telephone" : numéro de téléphone si mentionné, sinon null
 - "email" : email de contact si mentionné, sinon null
+- "type_candidature" : un parmi "Offre publiée", "Candidature spontanée - \
+Entreprise", "Candidature spontanée - Personne" (utilise "Offre publiée" par \
+défaut)
+- "contact_nom" : nom de la personne contactée si mentionné, sinon null
+- "contact_lien" : lien du profil de cette personne (LinkedIn, etc.) si \
+mentionné, sinon null
 
 Si une information est absente du texte, mets une chaîne vide "" (ou null pour \
-"lien_offre", "telephone", "email"). Ne devine pas d'URL.
+"lien_offre", "telephone", "email", "contact_nom", "contact_lien"). Ne devine \
+pas d'URL.
 
 Texte à analyser :
 \"\"\"
@@ -100,6 +110,9 @@ def _nettoyer_reponse(brut):
 
     if not resultat.get("statut"):
         resultat["statut"] = "En attente"
+
+    if not resultat.get("type_candidature"):
+        resultat["type_candidature"] = "Offre publiée"
 
     if not resultat.get("lien_offre"):
         resultat["lien_offre"] = None

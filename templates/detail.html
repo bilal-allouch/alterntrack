@@ -80,9 +80,27 @@
                     <div class="info-value">{{ candidature.type_contrat }}</div>
                 </div>
                 <div class="info-item">
+                    <div class="info-label">Type de candidature</div>
+                    <div class="info-value">{{ candidature.type_candidature if candidature.type_candidature else "—" }}</div>
+                </div>
+                <div class="info-item">
                     <div class="info-label">Localisation</div>
                     <div class="info-value">{{ candidature.localisation }}</div>
                 </div>
+                {% if candidature.contact_nom or candidature.contact_lien %}
+                    <div class="info-item">
+                        <div class="info-label">Contact</div>
+                        <div class="info-value">
+                            {% if candidature.contact_lien %}
+                                <a href="{{ candidature.contact_lien }}" target="_blank" rel="noopener noreferrer">
+                                    {{ candidature.contact_nom if candidature.contact_nom else candidature.contact_lien }}
+                                </a>
+                            {% else %}
+                                {{ candidature.contact_nom }}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="info-item">
                     <div class="info-label">Source de l'offre</div>
                     <div class="info-value">{{ candidature.source if candidature.source else "—" }}</div>

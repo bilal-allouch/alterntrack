@@ -148,10 +148,27 @@
         const champSourceAutre = document.getElementById("source_autre");
         const formConfirmer = document.getElementById("form-confirmer");
         const champDate = document.getElementById("date_candidature");
+        const selectTypeCandidature = document.getElementById("type_candidature");
+        const contactFieldsWrap = document.getElementById("contact-fields-wrap");
+        const checkboxEntreprise = document.getElementById("enregistrer_entreprise");
+        const entrepriseFieldsWrap = document.getElementById("entreprise-fields-wrap");
 
         function majAffichageSourceAutre() {
             if (sourceAutreWrap && selectSource) {
                 sourceAutreWrap.style.display = selectSource.value === "Autre" ? "block" : "none";
+            }
+        }
+
+        function majAffichageContact() {
+            if (contactFieldsWrap && selectTypeCandidature) {
+                contactFieldsWrap.style.display =
+                    selectTypeCandidature.value === "Candidature spontanée - Personne" ? "flex" : "none";
+            }
+        }
+
+        function majAffichageEntreprise() {
+            if (entrepriseFieldsWrap && checkboxEntreprise) {
+                entrepriseFieldsWrap.style.display = checkboxEntreprise.checked ? "flex" : "none";
             }
         }
 
@@ -199,6 +216,17 @@
                 setSelectValue(selectSource, data.source || "Autre");
                 majAffichageSourceAutre();
 
+                if (selectTypeCandidature) {
+                    selectTypeCandidature.value = data.type_candidature || "Offre publiée";
+                }
+                if (document.getElementById("contact_nom")) {
+                    document.getElementById("contact_nom").value = data.contact_nom || "";
+                }
+                if (document.getElementById("contact_lien")) {
+                    document.getElementById("contact_lien").value = data.contact_lien || "";
+                }
+                majAffichageContact();
+
                 if (document.getElementById("ent_nom")) {
                     document.getElementById("ent_nom").value = data.entreprise || "";
                 }
@@ -230,6 +258,16 @@
 
         if (selectSource) {
             selectSource.addEventListener("change", majAffichageSourceAutre);
+        }
+
+        if (selectTypeCandidature) {
+            selectTypeCandidature.addEventListener("change", majAffichageContact);
+            majAffichageContact();
+        }
+
+        if (checkboxEntreprise) {
+            checkboxEntreprise.addEventListener("change", majAffichageEntreprise);
+            majAffichageEntreprise();
         }
 
         if (formConfirmer) {
