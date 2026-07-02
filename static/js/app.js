@@ -161,8 +161,17 @@
 
         function majAffichageContact() {
             if (contactFieldsWrap && selectTypeCandidature) {
-                contactFieldsWrap.style.display =
-                    selectTypeCandidature.value === "Candidature spontanée - Personne" ? "flex" : "none";
+                const visible = selectTypeCandidature.value === "Candidature spontanée - Personne";
+                contactFieldsWrap.style.display = visible ? "flex" : "none";
+
+                const champContactNom = document.getElementById("contact_nom");
+                const champContactLien = document.getElementById("contact_lien");
+                if (champContactNom) {
+                    champContactNom.disabled = !visible;
+                }
+                if (champContactLien) {
+                    champContactLien.disabled = !visible;
+                }
             }
         }
 
