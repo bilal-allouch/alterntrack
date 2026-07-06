@@ -209,13 +209,16 @@ def confirmer():
     if request.form.get("enregistrer_entreprise") == "on":
         ent_nom = request.form.get("ent_nom", "").strip()
         if ent_nom:
-            ent_data = {
-                "nom": ent_nom,
-                "lien": (request.form.get("ent_lien") or "").strip() or None,
-                "telephone": (request.form.get("ent_telephone") or "").strip() or None,
-                "email": (request.form.get("ent_email") or "").strip() or None,
-            }
-            database.ajouter_entreprise(ent_data, current_user.id)
+            if database.get_entreprise_par_nom(ent_nom, current_user.id) is not None:
+                flash("L'entreprise '%s' est déjà dans votre carnet." % ent_nom, "info")
+            else:
+                ent_data = {
+                    "nom": ent_nom,
+                    "lien": (request.form.get("ent_lien") or "").strip() or None,
+                    "telephone": (request.form.get("ent_telephone") or "").strip() or None,
+                    "email": (request.form.get("ent_email") or "").strip() or None,
+                }
+                database.ajouter_entreprise(ent_data, current_user.id)
 
     flash("Candidature enregistrée.", "success")
     return redirect(url_for("detail", id=nouvel_id))
@@ -283,6 +286,10 @@ def entreprises_ajouter():
         flash("Le nom de l'entreprise est requis.", "danger")
         return redirect(url_for("entreprises"))
 
+    if database.get_entreprise_par_nom(data["nom"], current_user.id) is not None:
+        flash("L'entreprise '%s' est déjà dans votre carnet." % data["nom"], "info")
+        return redirect(url_for("entreprises"))
+
     database.ajouter_entreprise(data, current_user.id)
     flash("Entreprise enregistrée.", "success")
     return redirect(url_for("entreprises"))
@@ -295,6 +302,17 @@ def entreprises_supprimer(id):
     database.supprimer_entreprise(id, current_user.id)
     flash("Entreprise supprimée.", "success")
     return redirect(url_for("entreprises"))
+
+
+@app.route("/api/entreprise/existe")
+@login_required
+def api_entreprise_existe():
+    """Indique si une entreprise avec ce nom existe déjà pour l'utilisateur."""
+    nom = request.args.get("nom", "").strip()
+    if not nom:
+        return jsonify({"existe": False})
+    existe = database.get_entreprise_par_nom(nom, current_user.id) is not None
+    return jsonify({"existe": existe})
 
 
 # --- Administration des utilisateurs -----------------------------------------

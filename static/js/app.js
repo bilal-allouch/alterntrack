@@ -152,6 +152,7 @@
         const contactFieldsWrap = document.getElementById("contact-fields-wrap");
         const checkboxEntreprise = document.getElementById("enregistrer_entreprise");
         const entrepriseFieldsWrap = document.getElementById("entreprise-fields-wrap");
+        const entrepriseExisteMsg = document.getElementById("entreprise-existe-msg");
 
         function majAffichageSourceAutre() {
             if (sourceAutreWrap && selectSource) {
@@ -178,6 +179,29 @@
         function majAffichageEntreprise() {
             if (entrepriseFieldsWrap && checkboxEntreprise) {
                 entrepriseFieldsWrap.style.display = checkboxEntreprise.checked ? "flex" : "none";
+            }
+        }
+
+        async function verifierEntrepriseExistante(nom) {
+            if (!nom || !checkboxEntreprise) {
+                return;
+            }
+            try {
+                const reponse = await fetch("/api/entreprise/existe?nom=" + encodeURIComponent(nom));
+                const data = await reponse.json();
+                if (data.existe) {
+                    checkboxEntreprise.checked = false;
+                    majAffichageEntreprise();
+                    if (entrepriseExisteMsg) {
+                        entrepriseExisteMsg.style.display = "block";
+                    }
+                } else if (entrepriseExisteMsg) {
+                    entrepriseExisteMsg.style.display = "none";
+                }
+            } catch (erreur) {
+                if (entrepriseExisteMsg) {
+                    entrepriseExisteMsg.style.display = "none";
+                }
             }
         }
 
@@ -245,6 +269,8 @@
                 if (document.getElementById("ent_email")) {
                     document.getElementById("ent_email").value = data.email || "";
                 }
+
+                await verifierEntrepriseExistante(data.entreprise);
 
                 confirmSection.classList.add("show");
                 confirmSection.scrollIntoView({ behavior: "smooth" });

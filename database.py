@@ -351,6 +351,15 @@ def get_toutes_entreprises(user_id):
     )
 
 
+def get_entreprise_par_nom(nom, user_id):
+    """Retourne une entreprise existante avec ce nom (insensible à la casse)."""
+    return _run(
+        "SELECT * FROM entreprises WHERE LOWER(nom) = LOWER(%s) AND user_id = %s",
+        (nom, user_id),
+        fetch="one",
+    )
+
+
 def get_entreprise(id, user_id):
     """Retourne une entreprise si elle appartient à l'utilisateur, sinon None."""
     return _run(

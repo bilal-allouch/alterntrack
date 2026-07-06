@@ -956,6 +956,13 @@ table {
     margin: -0.5rem 0 1.25rem;
 }
 
+.ent-existe-msg {
+    font-size: 0.85rem;
+    color: #3B82F6;
+    font-weight: 600;
+    margin-top: 0.4rem;
+}
+
 .confirm-divider {
     border: none;
     border-top: 1px solid #E2E8F0;
